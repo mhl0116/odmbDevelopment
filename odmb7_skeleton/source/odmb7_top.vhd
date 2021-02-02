@@ -32,7 +32,7 @@ entity odmb7_top is
     REF_CLK_5_N : in std_logic;         -- refclk1 to 227
     CLK_125_REF_P : in std_logic;       -- refclk1 to 226
     CLK_125_REF_N : in std_logic;       -- refclk1 to 226
-    EMCCLK : in std_logic;              -- Low frequency, 133 MHz for SPI programing clock
+    EMCCLK : in std_logic;              -- 133 MHz for SPI programing clock
     LF_CLK : in std_logic;              -- Low frequency, 10 kHz
 
     --------------------
@@ -168,6 +168,18 @@ entity odmb7_top is
     ADC_DOUT      : in std_logic;
 
     --------------------------------
+    -- Voltage monitoring ports
+    --------------------------------
+    ADC_CS0_18    : out std_logic; -- Bank 46
+    ADC_CS1_18    : out std_logic; -- Bank 46 
+    ADC_CS2_18    : out std_logic; -- Bank 46 
+    ADC_CS3_18    : out std_logic; -- Bank 46 
+    ADC_CS4_18    : out std_logic; -- Bank 46 
+    ADC_DIN_18    : out std_logic; -- Bank 46 
+    ADC_SCK_18    : out std_logic; -- Bank 46 
+    ADC_DOUT_18   : in std_logic   -- Bank 46
+
+    --------------------------------
     -- Others
     --------------------------------
     LEDS_CFV      : out std_logic_vector(11 downto 0)
@@ -225,6 +237,18 @@ architecture odmb_inst of odmb7_top is
       );
   end component;
 
+  component odmb7_voltageMon is
+    port (
+      ADC_CS0_18     : out std_logic;
+      ADC_CS1_18     : out std_logic;
+      ADC_CS2_18     : out std_logic;
+      ADC_CS3_18     : out std_logic;
+      ADC_CS4_18     : out std_logic;
+      ADC_DIN_18     : out std_logic;
+      ADC_SCK_18     : out std_logic; 
+      ADC_DOUT_18    : in  std_logic
+   );
+  end component;
   --------------------------------------
   -- Clock signals
   --------------------------------------
@@ -351,6 +375,18 @@ begin
       clk_mgtclk125  => clk_mgtclk125
       );
 
+
+  u_voltageMon : odmb7_clocking
+    port map (
+      ADC_CS0_18     => ADC_CS0_18,
+      ADC_CS1_18     => ADC_CS1_18,
+      ADC_CS2_18     => ADC_CS2_18,
+      ADC_CS3_18     => ADC_CS3_18,
+      ADC_CS4_18     => ADC_CS4_18,
+      ADC_DIN_18     => ADC_DIN_18,
+      ADC_SCK_18     => ADC_SCK_18,
+      ADC_DOUT_18    => ADC_DOUT_18
+      );
 
   -------------------------------------------------------------------------------------------
   -- Handle PPIB/DCFEB signals
