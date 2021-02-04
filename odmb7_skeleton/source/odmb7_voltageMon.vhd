@@ -1,4 +1,4 @@
--- work for MAX1271B
+-- WOrk for MAX1271B
 -- https://datasheets.maximintegrated.com/en/ds/MAX1270-MAX1271B.pdf 
 
 library IEEE;
@@ -10,83 +10,134 @@ library unisim;
 use unisim.vcomponents.all;
 
 entity odmb7_voltageMon is
-  port (
-      CLK            : in  std_logic;
-      ADC_CS0_18     : out std_logic;
-      ADC_CS1_18     : out std_logic;
-      ADC_CS2_18     : out std_logic;
-      ADC_CS3_18     : out std_logic;
-      ADC_CS4_18     : out std_logic;
-      ADC_DIN_18     : out std_logic;
-      ADC_SCK_18     : out std_logic;
-      ADC_DOUT_18    : in  std_logic
+    port (
+        CLK    : in  std_logic;
+        CS     : out std_logic;
+        DIN    : out std_logic;
+        SCK    : out std_logic;
+        DOUT   : in  std_logic;
+        DATA   : out std_logic_vector(11 downto 0)
     );
 end odmb7_voltageMon;
 
 architecture Behavioral of odmb7_voltageMon is
 
-  component clockManager is
-    port (
-      clk_in1    : in std_logic;
-      clk_out10  : out std_logic;
-      clk_out40  : out std_logic;
-      clk_out80  : out std_logic;
-      clk_out160 : out std_logic
-      );
-  end component;
+    signal mon_SpiCsB : std_logic := "1";
+    signal startchannelvalid : std_logic := "0";
+    signal mon_start : std_logic := "0";
+    signal mon_cmdcounter  : std_logic_vector := x"00";  
+    signal mon_cmdreg  : std_logic_vector := x"00";  
+    signal mon_inprogress  : std_logic := "0";  
+    signal ctrlseq_done : std_logic := "0";
+    signal data_done : std_logic := "0";
+    signal data_valid : std_logic := "0";
+    signal data_valid_cntr : std_logic := x"00";
+    signal dout_data : std_logic := x"000"; 
 
-  --signal mgtrefclk0_224_odiv2 : std_logic;
-  --constant  AddrWidth        : integer   := 32;  -- 24 or 32 (3 or 4 byte addr mode)
-  type monstates is 
-      (S_MON_IDLE, S_MON_ASSCS1, S_MON_CTRLSEQ, S_MON_WAIT);
-  signal monstate  : monstates := S_MON_IDLE;
+    -- check table 1 of datasheet
+    constant START  : std_logic := "1"; 
+    constant STARTCHANNEL  : std_logic_vector := "000"; -- 3 bits for 8-channel selection 
+    constant RNG : std_logic := "0";
+    constant BIP : std_logic := "1";
+    constant PD1 : std_logic := "0";
+    constant PD0 : std_logic := "1";
+
+    type monstates is 
+        (S_MON_IDLE, S_MON_ASSCS1, S_MON_CTRLSEQ, S_MON_WAIT);
+    signal monstate  : monstates := S_MON_IDLE;
+
+    type doutstates is 
+        (S_DOUT_IDLE, S_DOUT_WAIT, S_DOUT_DATA);
+    signal doutstate  : doutstates := S_DOUT_IDLE;
 
 begin
 
-processmon : process (CLK)
-  begin
-  -- this part only controls sending ctrl sequence
-  if rising_edge(CLK) then
-  case monstate is 
-   when S_MON_IDLE =>
-        mon_SpiCsB <= '1';
-        if (ctrlseqvalid = '1') then ctrlseq <= "1" & current_channel & "0101"; end if; -- external clk, normal operation 
-        if (startchannelvalid = '1') then current_channel <= start_channel; end if; -- 8 channels to read for each chip 
-        if (mon_start = '1') then  
-          mon_data_valid_cntr <= "000";
-          mon_cmdcounter <= x"11";  -- 18 clks conversion  
-          mon_rddata <= x"0"; -- 12 bit readback data
-          mon_inprogress <= '1';
-          monstate <= S_MON_ASSCS1;
-         end if;
-                       
------------------   Send 8 bits control sequence -----------------------------------------------------
-   when S_MON_ASSCS1 =>
-        mon_SpiCsB <= '0';
-        mon_cmdreg <=  "1" & current_channel & "0101";  -- Write Enable
-        monstate <= S_MON_CTRLSEQ;
-          
-   when S_MON_CTRLSEQ =>    
-        if (mon_cmdcounter /= 18) then mon_cmdcounter <= mon_cmdcounter - 1; 
-          mon_cmdreg <= mon_cmdreg(6 downto 0) & '0'; 
-        else
-          if (current_channel = 7) then 
-            current_channel <= start_channel;
-            monstate <= S_MON_WAIT; 
-            mon_inprogress <= '0';
-          else 
-            current_channel <= current_channel + 1;
-            monstate <= S_MON_ASSCS1;
-            mon_cmdcounter <= x"11";
-          end if;
-        end if;
+SCK <= CLK;
+DIN <= mon_cmdreg(0);
+CS <= mon_SpiCsB;
+DATA <= dout_data;
 
-   when S_MON_WAIT =>
-        er_SpiCsB <= '0';
-        erstate <= S_S4BMode_WR4BADDR;
-                        
+processmon : process (CLK)
+begin
+    -- this part only controls sending ctrl sequence
+    if rising_edge(CLK) then
+    case monstate is 
+        when S_MON_IDLE =>
+        mon_SpiCsB <= '1';
+        if (startchannelvalid = '1') then current_channel <= STARTCHANNEL; end if; -- 8 channels to read for each chip 
+        if (mon_start = '1') then  
+            mon_cmdcounter <= x"11";  -- 18 clks conversion  
+            mon_inprogress <= '1';
+            monstate <= S_MON_ASSCS1;
+        end if;
+        -- send 8 bits control sequence 
+        when S_MON_ASSCS1 =>
+            mon_SpiCsB <= '0';
+            mon_cmdreg <=  START & current_channel & RNG & BIP & PD1 & PD0; 
+            monstate <= S_MON_CTRLSEQ;
+          
+        when S_MON_CTRLSEQ =>    
+            if (mon_cmdcounter /= 17) then mon_cmdcounter <= mon_cmdcounter - 1; 
+                mon_cmdreg <= mon_cmdreg(6 downto 0) & '0'; 
+            else
+                if (current_channel = "111") then 
+                    current_channel <= STARTCHANNEL;
+                    monstate <= S_MON_WAIT; 
+                    mon_inprogress <= '0';
+                    ctrlseq_done <= "1";
+                else 
+                    current_channel <= current_channel + 1;
+                    monstate <= S_MON_ASSCS1;
+                    mon_cmdcounter <= x"11";
+                end if;
+            end if;
+
+        -- wait for data finish
+        when S_MON_WAIT =>
+        if (data_done = "1") then
+            monstates <= S_MON_IDLE;
+        end if
    end case;  
  end if;  -- Clk
-end process processmon;
-end Behavioral;
 
+----
+processdout : process (CLK)
+    begin
+    -- this part only takes care of get data from dout 
+    if rising_edge(CLK) then
+    case doutstate is 
+    when S_DOUT_IDLE =>
+        if (mon_start = '1') then  
+            dout_counter <= x"0d";  -- 18 clks conversion, after cs goes low for 13 clk, data starts to arrive  
+            data_done <= '0';
+            data_valid_cntr <= x"11";
+            data_valid <= "0";
+            doutstate <= S_DOUT_WAIT;
+        end if;
+
+    when S_DOUT_WAIT =>    
+        if (dout_counter /= 13) then dout_counter <= dout_counter - 1; 
+        else
+            doutstate <= S_DOUT_DATA
+        end if;
+                       
+    when S_DOUT_DATA =>    
+        data_valid_cntr <= data_valid_cntr + 1;
+        if (data_valid_cntr < 12) then -- 12 bits of valid data 
+            dout_data <= dout_data(11 downto 1) & DOUT;  
+            data_valid <= '0';
+        elsif (data_valid_cntr /= 17) then 
+            data_valid <= '1';
+        else
+            data_valid <= '0';
+            dout_data <= x"000"; 
+            if (ctrlseq_done = "1") then
+                doutstate <= S_DOUT_IDLE;
+                data_done <= '1';
+            end if
+        end if;  -- if data valid
+    end case;  
+    end if;  -- Clk
+end process processdout;
+
+end Behavioral;

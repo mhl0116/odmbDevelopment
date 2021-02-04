@@ -237,8 +237,9 @@ architecture odmb_inst of odmb7_top is
       );
   end component;
 
-  component odmb7_voltageMon is
+  component odmb7_voltageMon_wrapper is
     port (
+      CLK            : in  std_logic
       ADC_CS0_18     : out std_logic;
       ADC_CS1_18     : out std_logic;
       ADC_CS2_18     : out std_logic;
@@ -376,8 +377,9 @@ begin
       );
 
 
-  u_voltageMon : odmb7_clocking
+  u_voltageMon_wrapper : odmb7_voltageMon_wrapper
     port map (
+      CLK            => clk_sysclk10, -- will need to change to a slower one: 2MHz
       ADC_CS0_18     => ADC_CS0_18,
       ADC_CS1_18     => ADC_CS1_18,
       ADC_CS2_18     => ADC_CS2_18,
