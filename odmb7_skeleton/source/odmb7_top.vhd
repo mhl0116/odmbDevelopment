@@ -103,10 +103,10 @@ entity odmb7_top is
     BCK_PRS_P    : in std_logic; -- B04_RX1_P
     BCK_PRS_N    : in std_logic; -- B04_RX1_N
 
-    SPY_TX_P     : out std_logic;        -- output to PC
-    SPY_TX_N     : out std_logic;        -- output to PC
-    DAQ_TX_P     : out std_logic_vector(4 downto 1); -- B04 TX, output to FED
-    DAQ_TX_N     : out std_logic_vector(4 downto 1); -- B04 TX, output to FED
+    --SPY_TX_P     : out std_logic;        -- output to PC
+    --SPY_TX_N     : out std_logic;        -- output to PC
+    --DAQ_TX_P     : out std_logic_vector(4 downto 1); -- B04 TX, output to FED
+    --DAQ_TX_N     : out std_logic_vector(4 downto 1); -- B04 TX, output to FED
 
     --------------------------------
     -- Optical control signals
@@ -162,10 +162,10 @@ entity odmb7_top is
     --------------------------------
     SYSMON_P      : in std_logic_vector(15 downto 0);
     SYSMON_N      : in std_logic_vector(15 downto 0);
-    ADC_CS_B      : out std_logic_vector(4 downto 0);
-    ADC_SCK       : out std_logic;
-    ADC_DIN       : out std_logic;
-    ADC_DOUT      : in std_logic;
+    --ADC_CS_B      : out std_logic_vector(4 downto 0);
+    --ADC_SCK       : out std_logic;
+    --ADC_DIN       : out std_logic;
+    --ADC_DOUT      : in std_logic;
 
     --------------------------------
     -- Voltage monitoring ports
