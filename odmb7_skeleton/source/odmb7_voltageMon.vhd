@@ -5,6 +5,7 @@ library IEEE;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
+use ieee.std_logic_unsigned.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -22,25 +23,27 @@ end odmb7_voltageMon;
 
 architecture Behavioral of odmb7_voltageMon is
 
-    signal mon_SpiCsB : std_logic := "1";
-    signal startchannelvalid : std_logic := "0";
-    signal mon_start : std_logic := "0";
-    signal mon_cmdcounter  : std_logic_vector := x"00";  
-    signal mon_cmdreg  : std_logic_vector := x"00";  
-    signal mon_inprogress  : std_logic := "0";  
-    signal ctrlseq_done : std_logic := "0";
-    signal data_done : std_logic := "0";
-    signal data_valid : std_logic := "0";
-    signal data_valid_cntr : std_logic := x"00";
-    signal dout_data : std_logic := x"000"; 
+    signal current_channel : std_logic_vector(11 downto 0) := x"000";
+    signal mon_SpiCsB : std_logic := '1';
+    signal startchannelvalid : std_logic := '0';
+    signal mon_start : std_logic := '0';
+    signal mon_cmdcounter  : std_logic_vector(7 downto 0) := x"00";  
+    signal mon_cmdreg  : std_logic_vector(7 downto 0) := x"00";  
+    signal mon_inprogress  : std_logic := '0';  
+    signal ctrlseq_done : std_logic := '0';
+    signal data_done : std_logic := '0';
+    signal data_valid : std_logic := '0';
+    signal data_valid_cntr : std_logic_vector(7 downto 0) := x"00";
+    signal dout_data : std_logic_vector(11 downto 0) := x"000"; 
+    signal dout_counter: std_logic_vector(7 downto 0) := x"00";
 
     -- check table 1 of datasheet
-    constant START  : std_logic := "1"; 
-    constant STARTCHANNEL  : std_logic_vector := "000"; -- 3 bits for 8-channel selection 
-    constant RNG : std_logic := "0";
-    constant BIP : std_logic := "1";
-    constant PD1 : std_logic := "0";
-    constant PD0 : std_logic := "1";
+    constant START  : std_logic := '1'; 
+    constant STARTCHANNEL  : std_logic_vector(11 downto 0) := "000"; -- 3 bits for 8-channel selection 
+    constant RNG : std_logic := '0';
+    constant BIP : std_logic := '1';
+    constant PD1 : std_logic := '0';
+    constant PD0 : std_logic := '1';
 
     type monstates is 
         (S_MON_IDLE, S_MON_ASSCS1, S_MON_CTRLSEQ, S_MON_WAIT);
@@ -84,7 +87,7 @@ begin
                     current_channel <= STARTCHANNEL;
                     monstate <= S_MON_WAIT; 
                     mon_inprogress <= '0';
-                    ctrlseq_done <= "1";
+                    ctrlseq_done <= '1';
                 else 
                     current_channel <= current_channel + 1;
                     monstate <= S_MON_ASSCS1;
@@ -94,11 +97,13 @@ begin
 
         -- wait for data finish
         when S_MON_WAIT =>
-        if (data_done = "1") then
-            monstates <= S_MON_IDLE;
-        end if
+        if (data_done = '1') then
+            monstate <= S_MON_IDLE;
+        end if;
    end case;  
  end if;  -- Clk
+end process processmon;
+
 
 ----
 processdout : process (CLK)
@@ -111,14 +116,15 @@ processdout : process (CLK)
             dout_counter <= x"0d";  -- 18 clks conversion, after cs goes low for 13 clk, data starts to arrive  
             data_done <= '0';
             data_valid_cntr <= x"11";
-            data_valid <= "0";
+            data_valid <= '0';
             doutstate <= S_DOUT_WAIT;
         end if;
 
     when S_DOUT_WAIT =>    
-        if (dout_counter /= 13) then dout_counter <= dout_counter - 1; 
+        if (dout_counter /= 13) then
+         dout_counter <= dout_counter - 1; 
         else
-            doutstate <= S_DOUT_DATA
+            doutstate <= S_DOUT_DATA;
         end if;
                        
     when S_DOUT_DATA =>    
@@ -131,11 +137,11 @@ processdout : process (CLK)
         else
             data_valid <= '0';
             dout_data <= x"000"; 
-            if (ctrlseq_done = "1") then
+            if (ctrlseq_done = '1') then
                 doutstate <= S_DOUT_IDLE;
                 data_done <= '1';
-            end if
-        end if;  -- if data valid
+            end if;  -- if ctrl sequence is done
+         end if;
     end case;  
     end if;  -- Clk
 end process processdout;

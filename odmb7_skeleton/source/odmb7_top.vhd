@@ -177,7 +177,7 @@ entity odmb7_top is
     ADC_CS4_18    : out std_logic; -- Bank 46 
     ADC_DIN_18    : out std_logic; -- Bank 46 
     ADC_SCK_18    : out std_logic; -- Bank 46 
-    ADC_DOUT_18   : in std_logic   -- Bank 46
+    ADC_DOUT_18   : in std_logic;   -- Bank 46
 
     --------------------------------
     -- Others
@@ -239,7 +239,7 @@ architecture odmb_inst of odmb7_top is
 
   component odmb7_voltageMon_wrapper is
     port (
-      CLK            : in  std_logic
+      CLK            : in  std_logic;
       ADC_CS0_18     : out std_logic;
       ADC_CS1_18     : out std_logic;
       ADC_CS2_18     : out std_logic;
