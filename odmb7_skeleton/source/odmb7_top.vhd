@@ -223,6 +223,9 @@ architecture odmb_inst of odmb7_top is
       clk_sysclk10   : out std_logic;
       clk_sysclk40   : out std_logic;
       clk_sysclk80   : out std_logic;
+      clk_sysclk2p5  : out std_logic;
+      clk_sysclk1p25 : out std_logic;
+      clk_sysclk625k : out std_logic;
       clk_cmsclk     : out std_logic;
       clk_emcclk     : out std_logic;   -- buffed EMC clokc
       clk_lfclk      : out std_logic;   -- buffed LF clokc
@@ -240,6 +243,7 @@ architecture odmb_inst of odmb7_top is
   component odmb7_voltageMon_wrapper is
     port (
       CLK            : in  std_logic;
+      CLK_div2       : in  std_logic;
       ADC_CS0_18     : out std_logic;
       ADC_CS1_18     : out std_logic;
       ADC_CS2_18     : out std_logic;
@@ -263,6 +267,9 @@ architecture odmb_inst of odmb7_top is
   signal clk_sysclk10 : std_logic;
   signal clk_sysclk40 : std_logic;
   signal clk_sysclk80 : std_logic;
+  signal clk_sysclk2p5: std_logic;
+  signal clk_sysclk1p25: std_logic;
+  signal clk_sysclk625k: std_logic;
   signal clk_cmsclk : std_logic;
   signal clk_emcclk : std_logic;
   signal clk_lfclk : std_logic;
@@ -363,6 +370,9 @@ begin
       clk_sysclk10   => clk_sysclk10,
       clk_sysclk40   => clk_sysclk40,
       clk_sysclk80   => clk_sysclk80,
+      clk_sysclk2p5  => clk_sysclk2p5,
+      clk_sysclk1p25 => clk_sysclk1p25,
+      clk_sysclk625k => clk_sysclk625k,
       clk_cmsclk     => clk_cmsclk,
       clk_emcclk     => clk_emcclk,
       clk_lfclk      => clk_lfclk,
@@ -379,7 +389,8 @@ begin
 
   u_voltageMon_wrapper : odmb7_voltageMon_wrapper
     port map (
-      CLK            => clk_sysclk10, -- will need to change to a slower one: 2MHz
+      CLK            => clk_sysclk1p25, 
+      CLK_div2       => clk_sysclk625k, 
       ADC_CS0_18     => ADC_CS0_18,
       ADC_CS1_18     => ADC_CS1_18,
       ADC_CS2_18     => ADC_CS2_18,

@@ -12,12 +12,13 @@ use unisim.vcomponents.all;
 
 entity odmb7_voltageMon is
     port (
-        CLK    : in  std_logic;
-        CS     : out std_logic;
-        DIN    : out std_logic;
-        SCK    : out std_logic;
-        DOUT   : in  std_logic;
-        DATA   : out std_logic_vector(11 downto 0);
+        CLK      : in  std_logic;
+        CLK_div2 : in  std_logic;
+        CS       : out std_logic;
+        DIN      : out std_logic;
+        SCK      : out std_logic;
+        DOUT     : in  std_logic;
+        DATA     : out std_logic_vector(11 downto 0);
 
         startchannelvalid  : in std_logic
     );
@@ -38,14 +39,16 @@ architecture Behavioral of odmb7_voltageMon is
             probe7 : in std_logic_vector(7 downto 0) := (others=> '0');
             probe8 : in std_logic_vector(7 downto 0) := (others=> '0');
             probe9 : in std_logic_vector(7 downto 0) := (others=> '0');
-            probe10 : in std_logic_vector(7 downto 0) := (others=> '0')
+            probe10 : in std_logic_vector(7 downto 0) := (others=> '0');
+            probe11 : in std_logic := '0'
+
         );
     end component;
 
 
     signal current_channel : std_logic_vector(2 downto 0) := "000";
     signal mon_SpiCsB : std_logic := '1';
-    signal startchannelvalid : std_logic := '0';
+    --signal startchannelvalid : std_logic := '0';
     signal mon_start : std_logic := '0';
     signal mon_cmdcounter  : std_logic_vector(7 downto 0) := x"00";  
     signal mon_cmdreg  : std_logic_vector(7 downto 0) := x"00";  
@@ -57,6 +60,8 @@ architecture Behavioral of odmb7_voltageMon is
     signal dout_data : std_logic_vector(11 downto 0) := x"000"; 
     signal dout_counter: std_logic_vector(7 downto 0) := x"00";
     signal variousflags: std_logic_vector(4 downto 0) := "00000";
+    signal ila_trigger1: std_logic_vector(7 downto 0) := x"00";
+
 
     -- check table 1 of datasheet
     constant START  : std_logic := '1'; 
@@ -175,7 +180,7 @@ variousflags(4) <= data_valid;
 
 i_ila : ila_0
     port map(
-        clk => spiclk,
+        clk => CLK_div2,
         probe0 => ila_trigger1,
         probe1 => mon_SpiCsB,  
         probe2 => mon_cmdreg(0),  
@@ -186,7 +191,8 @@ i_ila : ila_0
         probe7 => mon_cmdcounter,  
         probe8 => mon_cmdreg,  
         probe9 => data_valid_cntr,  
-        probe10 => dout_counter  
+        probe10 => dout_counter,  
+        probe11 => CLK  
 );
 
 end Behavioral;

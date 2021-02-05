@@ -9,6 +9,7 @@ use unisim.vcomponents.all;
 entity odmb7_voltageMon_wrapper is
     port (
       CLK            : in  std_logic;
+      CLK_div2       : in  std_logic;
       ADC_CS0_18     : out std_logic;
       ADC_CS1_18     : out std_logic;
       ADC_CS2_18     : out std_logic;
@@ -24,6 +25,7 @@ architecture Behavioral of odmb7_voltageMon_wrapper is
   component odmb7_voltageMon is
     port (
         CLK    : in  std_logic;
+        CLK_div2    : in  std_logic;
         CS     : out std_logic;
         DIN    : out std_logic;
         SCK    : out std_logic;
@@ -63,6 +65,7 @@ begin
     u_voltageMon : odmb7_voltageMon
         port map (
             CLK  => CLK,
+            CLK_div2  => CLK_div2,
             CS   => CS,
             DIN  => ADC_DIN_18,
             SCK  => ADC_SCK_18,
@@ -74,7 +77,7 @@ begin
 
     i_vio : vio_0
         PORT MAP (
-            clk => CLK,
+            clk => CLK_div2,
             probe_out0 => CS_SEL,
             probe_out1 => probeout1 
     );

@@ -45,6 +45,9 @@ entity odmb7_clocking is
     clk_sysclk10 : out std_logic;
     clk_sysclk40 : out std_logic;
     clk_sysclk80 : out std_logic;
+    clk_sysclk2p5: out std_logic;
+    clk_sysclk1p25: out std_logic;
+    clk_sysclk625k: out std_logic;
     clk_cmsclk : out std_logic;
     clk_emcclk : out std_logic;
     clk_lfclk : out std_logic;
@@ -83,6 +86,22 @@ architecture Behavioral of odmb7_clocking is
   signal clk_cmsclk_unbuf : std_logic;
   signal clk_gp6_unbuf : std_logic;
   signal clk_gp7_unbuf : std_logic;
+
+  signal clk20_unbuf     : std_logic := '0';
+  signal clk20_inv       : std_logic := '1';
+  signal clk20           : std_logic := '0';
+  signal clk5_unbuf      : std_logic := '0';
+  signal clk5_inv        : std_logic := '1';
+  signal clk2p5_unbuf    : std_logic := '0';
+  signal clk2p5_inv      : std_logic := '1';
+  signal clk2p5          : std_logic := '0';
+  signal clk1p25         : std_logic := '0';
+  signal clk1p25_inv     : std_logic := '1';
+  signal clk625k         : std_logic := '0';
+  signal clk625k_inv     : std_logic := '1';
+  signal clk625k_unbuf   : std_logic := '0';
+  
+  signal CLK10           : std_logic := '0';
 
 begin
 
@@ -247,9 +266,30 @@ begin
   clockManager_i : clockManager
     port map (
       clk_in1   => clk_cmsclk_unbuf, -- input 40 MHz
-      clk_out10 => clk_sysclk10,   -- output 10 MHz
+      clk_out10 => CLK10,   -- output 10 MHz
       clk_out40 => clk_sysclk40,   -- output 40 MHz
       clk_out80 => clk_sysclk80    -- output 80 MHz
       );
+
+  clk20_inv <= not clk20_unbuf;
+  clk5_inv <= not clk5_unbuf;
+  clk2p5_inv <= not clk2p5_unbuf;
+  clk1p25_inv <= not clk1p25;
+  clk625k_inv <= not clk625k_unbuf;
+  
+  clk_sysclk10 <= CLK10;
+
+  FD_clk20  : FD port map(D => clk20_inv,  C => clk_cmsclk_unbuf, Q => clk20_unbuf);
+  FD_clk5   : FD port map(D => clk5_inv,   C => CLK10, Q => clk5_unbuf  );
+  FD_clk2p5 : FD port map(D => clk2p5_inv, C => clk5_unbuf, Q => clk2p5_unbuf);
+  FD_clk1p25 : FD port map(D => clk1p25_inv, C => clk2p5_unbuf, Q => clk1p25);
+  FD_clk625k : FD port map(D => clk625k_inv, C => clk1p25, Q => clk625k_unbuf);
+  BUFG_clk20  : BUFG port map(I => clk20_unbuf, O => clk20);
+  BUFG_clk2p5 : BUFG port map(I => clk2p5_unbuf, O => clk2p5);
+  BUFG_clk625k : BUFG port map(I => clk625k_unbuf, O => clk625k);
+
+  clk_sysclk2p5 <= clk2p5_unbuf;
+  clk_sysclk1p25 <= clk1p25;
+  clk_sysclk625k <= clk625k_unbuf;
 
 end Behavioral;
