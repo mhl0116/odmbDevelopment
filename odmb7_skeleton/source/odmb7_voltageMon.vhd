@@ -23,7 +23,7 @@ end odmb7_voltageMon;
 
 architecture Behavioral of odmb7_voltageMon is
 
-    signal current_channel : std_logic_vector(11 downto 0) := x"000";
+    signal current_channel : std_logic_vector(2 downto 0) := "000";
     signal mon_SpiCsB : std_logic := '1';
     signal startchannelvalid : std_logic := '0';
     signal mon_start : std_logic := '0';
@@ -39,7 +39,7 @@ architecture Behavioral of odmb7_voltageMon is
 
     -- check table 1 of datasheet
     constant START  : std_logic := '1'; 
-    constant STARTCHANNEL  : std_logic_vector(11 downto 0) := "000"; -- 3 bits for 8-channel selection 
+    constant STARTCHANNEL  : std_logic_vector(2 downto 0) := "000"; -- 3 bits for 8-channel selection 
     constant RNG : std_logic := '0';
     constant BIP : std_logic := '1';
     constant PD1 : std_logic := '0';

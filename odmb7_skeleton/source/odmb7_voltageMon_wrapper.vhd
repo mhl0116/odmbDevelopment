@@ -33,13 +33,13 @@ architecture Behavioral of odmb7_voltageMon_wrapper is
   end component;
 
   -- add ILA and VIO here
-  signal CS   : std_logic := "0";
-  signal dout_data : std_logic := x"000"; 
+  signal CS   : std_logic := '0';
+  signal dout_data : std_logic_vector(11 downto 0) := x"000"; 
 
 begin
 
     -- depend on input value from VIO or VME command, decide which CS to use
-    CS <= ADC_CS0_18; -- for now
+    ADC_CS0_18 <= CS; -- for now
 
     u_voltageMon : odmb7_voltageMon
         port map (
