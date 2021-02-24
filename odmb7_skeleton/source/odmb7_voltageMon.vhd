@@ -66,8 +66,8 @@ architecture Behavioral of odmb7_voltageMon is
     -- check table 1 of datasheet
     constant START  : std_logic := '1'; 
     constant STARTCHANNEL  : std_logic_vector(2 downto 0) := "000"; -- 3 bits for 8-channel selection 
-    constant RNG : std_logic := '0';
-    constant BIP : std_logic := '1';
+    constant RNG : std_logic := '1';
+    constant BIP : std_logic := '0';
     constant PD1 : std_logic := '0';
     constant PD0 : std_logic := '1';
 
