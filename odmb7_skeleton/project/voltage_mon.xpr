@@ -6,7 +6,7 @@
 <Project Version="7" Minor="44" Path="/home/hmei/workspace/vivadoProjects/odmbDevelopment/odmb7_skeleton/project/voltage_mon.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
-    <Option Name="Id" Val="1becc4c3772c441bb02e7d7622460de3"/>
+    <Option Name="Id" Val="1f094d91e0504f13b2834f3816fb3dd0"/>
     <Option Name="Part" Val="xcku035-ffva1156-1-c"/>
     <Option Name="CompiledLibDir" Val="$PCACHEDIR/compile_simlib"/>
     <Option Name="CompiledLibDirXSim" Val=""/>
@@ -66,7 +66,14 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip/ila/ila_0.xci">
+      <File Path="$PPRDIR/../ip/ila_0/ila_0.xci">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../ip/ila_1/ila_1.xci">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
