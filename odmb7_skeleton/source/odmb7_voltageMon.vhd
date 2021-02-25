@@ -178,6 +178,11 @@ variousflags(2) <= ctrlseq_done;
 variousflags(3) <= data_done;
 variousflags(4) <= data_valid;
 
+ila_trigger(0) <= mon_start;
+ila_trigger(1) <= mon_inprogress;
+ila_trigger(2) <= data_done;
+ila_trigger(3) <= ctrlseq_done;
+
 i_ila : ila_0
     port map(
         clk => CLK_div2,

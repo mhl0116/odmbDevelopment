@@ -76,6 +76,13 @@ architecture Behavioral of odmb7_clocking is
       );
   end component;
 
+  component ila_1 is
+      port (
+          clk : in std_logic := '0';
+          probe0 : in std_logic_vector(7 downto 0) := (others=> '0')
+      );
+  end component;
+
   signal mgtrefclk0_224_odiv2 : std_logic;
   signal mgtrefclk0_225_odiv2 : std_logic;
   signal mgtrefclk0_226_odiv2 : std_logic;
@@ -291,5 +298,13 @@ begin
   clk_sysclk2p5 <= clk2p5_unbuf;
   clk_sysclk1p25 <= clk1p25;
   clk_sysclk625k <= clk625k_unbuf;
+
+
+i_ila : ila_1
+    port map(
+        clk => clk_cmsclk_unbuf,
+        probe0 => "00" & clk20 & clk10 & clk2p5_unbuf & clk1p25 & clk625k & clk625k_unbuf
+         
+);
 
 end Behavioral;
